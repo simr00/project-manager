@@ -331,6 +331,7 @@ socket.on("receiveMessage", (msg: Message) => {
         }`}
       />
     </div>
+ <div className="h-5 w-px bg-gray-300" />
 
     {/* 🗑️ DELETE ICON */}
     <Dialog open={openDelete} onOpenChange={setOpenDelete}>
