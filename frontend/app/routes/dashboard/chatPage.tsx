@@ -5,6 +5,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Paperclip, Check,ArrowLeft } from "lucide-react";
+import { Trash2 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const socket = io("https://project-manager-eeyj.onrender.com");
 
@@ -38,7 +49,7 @@ export default function ChatApp() {
   return stored ? JSON.parse(stored) : {};
 });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
+const [openDelete, setOpenDelete] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const BASE_URL = "https://project-manager-eeyj.onrender.com";
@@ -141,6 +152,26 @@ socket.on("receiveMessage", (msg: Message) => {
       [userId]: Array.isArray(data) ? data : [],
     }));
   };
+  const deleteChat = async () => {
+  if (!activeUser) return;
+
+  try {
+    await fetch(
+      `${BASE_URL}/api-v1/messages/${activeUser._id}?myId=${myId}`,
+      { method: "DELETE" }
+    );
+
+    setMessages((prev) => ({
+      ...prev,
+      [activeUser._id]: [],
+    }));
+
+    setActiveUser(null);
+    setOpenDelete(false);
+  } catch (err) {
+    console.error("Delete failed", err);
+  }
+};
 
   const handleSelectUser = (user: User) => {
     setActiveUser(user);
@@ -278,22 +309,59 @@ socket.on("receiveMessage", (msg: Message) => {
                 <span>{activeUser.name}</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-sm">
-                  {onlineUsers.includes(activeUser._id)
-                    ? "Online"
-                    : "Offline"}
-                </span>
+              <div className="flex items-center gap-3">
+  {/* STATUS */}
+  <div className="flex items-center gap-2">
+    <span className="text-sm">
+      {onlineUsers.includes(activeUser._id)
+        ? "Online"
+        : "Offline"}
+    </span>
 
-                <div
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    onlineUsers.includes(activeUser._id)
-                      ? "bg-green-500"
-                      : "bg-red-500"
-                  }`}
-                />
-              </div>
-            </div>
+    <div
+      className={`w-2.5 h-2.5 rounded-full ${
+        onlineUsers.includes(activeUser._id)
+          ? "bg-green-500"
+          : "bg-red-500"
+      }`}
+    />
+  </div>
+
+  {/* 🗑️ DELETE CHAT MODAL */}
+  <Dialog open={openDelete} onOpenChange={setOpenDelete}>
+    <DialogTrigger asChild>
+      <Button variant="ghost" size="icon">
+        <Trash2 className="w-5 h-5 text-red-500" />
+      </Button>
+    </DialogTrigger>
+
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Delete this chat?</DialogTitle>
+        <DialogDescription>
+          This will permanently delete all messages with{" "}
+          <b>{activeUser.name}</b>.
+        </DialogDescription>
+      </DialogHeader>
+
+      <DialogFooter className="flex justify-end gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setOpenDelete(false)}
+        >
+          Cancel
+        </Button>
+
+        <Button
+          className="bg-red-500 hover:bg-red-600"
+          onClick={deleteChat}
+        >
+          Delete
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+</div>
 
             {/* MESSAGES */}
             <div className="flex-1 overflow-y-auto p-4">
