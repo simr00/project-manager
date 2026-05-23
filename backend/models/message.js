@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-
+read: { type: Boolean, default: false },
     // ✅ ADD FILE FIELD (VERY IMPORTANT)
     file: {
       type: String,
