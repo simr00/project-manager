@@ -5,8 +5,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Paperclip, Check,ArrowLeft } from "lucide-react";
-
-const socket = io("http://localhost:5000");
+const socket = io("https://project-manager-eeyj.onrender.com", {
+  withCredentials: true,
+  transports: ["websocket"], // 🔥 important for Render
+});
 
 type User = {
   _id: string;
@@ -41,7 +43,7 @@ export default function ChatApp() {
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://project-manager-eeyj.onrender.com";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const myId = user?._id;
 
@@ -131,6 +133,9 @@ socket.on("receiveMessage", (msg: Message) => {
   const fetchMessages = async (userId: string) => {
     const res = await fetch(
       `${BASE_URL}/api-v1/messages/${userId}?myId=${myId}`
+      {
+      credentials: "include",
+        }
     );
     const data = await res.json();
 
@@ -162,6 +167,7 @@ socket.on("receiveMessage", (msg: Message) => {
       const uploadRes = await fetch(`${BASE_URL}/api-v1/upload`, {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
       const uploadData = await uploadRes.json();
@@ -182,6 +188,7 @@ socket.on("receiveMessage", (msg: Message) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(msg),
+      credentials: "include",
     });
 
     setMessages((prev) => ({
