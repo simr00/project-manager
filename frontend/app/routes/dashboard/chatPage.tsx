@@ -124,8 +124,12 @@ socket.on("receiveMessage", (msg: Message) => {
 });
 const data = await res.json();
 
+const usersArray = Array.isArray(data) ? data : data.users || [];
+
 setUsers(
-  data.filter((u: User) => u._id !== myId && u.isEmailVerified)
+  usersArray.filter(
+    (u: any) => u._id !== myId && u.isEmailVerified
+  )
 );
       const data = await res.json();
       setUsers(data.filter((u: User) => u._id !== myId));
@@ -167,6 +171,7 @@ setUsers(
       const uploadRes = await fetch(`${BASE_URL}/api-v1/upload`, {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
       const uploadData = await uploadRes.json();
@@ -187,6 +192,7 @@ setUsers(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(msg),
+      credentials: "include",
     });
 
     setMessages((prev) => ({
