@@ -49,8 +49,7 @@ export default function WorkspaceSettings() {
   const [openDelete, setOpenDelete] = useState(false); // 🔥 modal state
 
   const token = localStorage.getItem("token");
-  const API = "http://localhost:5000";
-
+const API = "https://project-manager-eeyj.onrender.com";
   // 🔹 Fetch
   useEffect(() => {
     const fetchWorkspace = async () => {
