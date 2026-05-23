@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Paperclip, Check,ArrowLeft } from "lucide-react";
+import { Paperclip, Check, ArrowLeft } from "lucide-react";
 
 const socket = io("https://project-manager-eeyj.onrender.com");
 
@@ -33,102 +33,97 @@ export default function ChatApp() {
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [typing, setTyping] = useState(false);
 
- const [unread, setUnread] = useState<Record<string, boolean>>(() => {
-  const stored = localStorage.getItem("unread");
-  return stored ? JSON.parse(stored) : {};
-});
+  // ✅ unread persistence
+  const [unread, setUnread] = useState<Record<string, boolean>>(() => {
+    const stored = localStorage.getItem("unread");
+    return stored ? JSON.parse(stored) : {};
+  });
+
+  // ✅ notifications persistence
+  const [notifications, setNotifications] = useState(() => {
+    const stored = localStorage.getItem("notifications");
+    return stored ? JSON.parse(stored) : [];
+  });
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const usersRef = useRef<User[]>([]);
-  useEffect(() => {
-  usersRef.current = users;
-}, [users]);
+  const activeUserRef = useRef<User | null>(null);
 
   const BASE_URL = "https://project-manager-eeyj.onrender.com";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const myId = user?._id;
 
-  const getFileName = (url: string) => url.split("/").pop();
+  useEffect(() => {
+    usersRef.current = users;
+  }, [users]);
 
-  const getFileIcon = (url: string) => {
-    if (url.match(/\.pdf$/i)) return "📄";
-    if (url.match(/\.doc|\.docx$/i)) return "📝";
-    if (url.match(/\.ppt|\.pptx$/i)) return "📊";
-    if (url.match(/\.zip|\.rar$/i)) return "🗜️";
-    if (url.match(/\.xls|\.xlsx$/i)) return "📈";
-    return "📎";
-  };
-  const [notifications, setNotifications] = useState<
-  { from: string; name: string; text: string; read: boolean }[]
->([]);
-// 🔥 ADD THIS (below your states)
-  const activeUserRef = useRef<User | null>(null);
-useEffect(() => {
-  activeUserRef.current = activeUser;
-}, [activeUser]);
+  useEffect(() => {
+    activeUserRef.current = activeUser;
+  }, [activeUser]);
 
-// 🔥 KEEP THIS SYNCED
-useEffect(() => {
-  localStorage.setItem("unread", JSON.stringify(unread));
-}, [unread]);
+  useEffect(() => {
+    localStorage.setItem("unread", JSON.stringify(unread));
+  }, [unread]);
+
+  useEffect(() => {
+    localStorage.setItem("notifications", JSON.stringify(notifications));
+  }, [notifications]);
+
   // SOCKET
   useEffect(() => {
     if (myId) socket.emit("join", myId);
 
     socket.on("onlineUsers", setOnlineUsers);
 
-socket.on("receiveMessage", (msg: Message) => {
-  // ❗ Only handle messages meant for ME
-  if (msg.receiver !== myId) return;
+    socket.on("receiveMessage", (msg: Message) => {
+      if (msg.receiver !== myId) return;
 
-  setMessages((prev) => ({
-    ...prev,
-    [msg.sender]: [...(prev[msg.sender] || []), msg],
-  }));
-
-  // unread only if not active chat
-  if (activeUserRef.current?._id !== msg.sender) {
-    setUnread((prev) => ({
-      ...prev,
-      [msg.sender]: true,
-    }));
-
-const senderUser = usersRef.current.find((u) => u._id === msg.sender);
-    setNotifications((prev) => {
-      const updated = [
-        {
-          from: msg.sender,
-          name: senderUser?.name || "User",
-          text: msg.text || "Sent a file",
-          read: false,
-        },
+      setMessages((prev) => ({
         ...prev,
-      ];
+        [msg.sender]: [...(prev[msg.sender] || []), msg],
+      }));
 
-      localStorage.setItem("notifications", JSON.stringify(updated));
-      return updated;
+      // ✅ unread logic
+      if (activeUserRef.current?._id !== msg.sender) {
+        setUnread((prev) => ({
+          ...prev,
+          [msg.sender]: true,
+        }));
+
+        const senderUser = usersRef.current.find(
+          (u) => u._id === msg.sender
+        );
+
+        setNotifications((prev: any) => [
+          {
+            from: msg.sender,
+            name: senderUser?.name || "User",
+            text: msg.text || "Sent a file",
+            read: false,
+          },
+          ...prev,
+        ]);
+      }
     });
-  }
-});
 
     socket.on("typing", () => {
       setTyping(true);
       setTimeout(() => setTyping(false), 1500);
     });
 
-    return () => {socket.off();
-    socket.off("typing");
-  socket.off("onlineUsers");};
-  }, [myId, activeUser]);
+    return () => {
+      socket.off();
+    };
+  }, [myId]);
 
   // USERS
   useEffect(() => {
     const fetchUsers = async () => {
-     const res = await fetch(`${BASE_URL}/api-v1/users`, {
-  credentials: "include",
-});
-
+      const res = await fetch(`${BASE_URL}/api-v1/users`, {
+        credentials: "include",
+      });
       const data = await res.json();
       setUsers(data.filter((u: User) => u._id !== myId));
     };
@@ -137,8 +132,8 @@ const senderUser = usersRef.current.find((u) => u._id === msg.sender);
 
   const fetchMessages = async (userId: string) => {
     const res = await fetch(
-      `${BASE_URL}/api-v1/messages/${userId}?myId=${myId}`, {
-  credentials: "include",}
+      `${BASE_URL}/api-v1/messages/${userId}?myId=${myId}`,
+      { credentials: "include" }
     );
     const data = await res.json();
 
@@ -148,18 +143,21 @@ const senderUser = usersRef.current.find((u) => u._id === msg.sender);
     }));
   };
 
+  // ✅ FIXED (no msg error + mark read)
   const handleSelectUser = (user: User) => {
     setActiveUser(user);
     fetchMessages(user._id);
 
-   setUnread((prev) => {
-  if (!prev[user._id]) return prev;
+    setUnread((prev) => ({
+      ...prev,
+      [user._id]: false,
+    }));
 
-  return {
-    ...prev,
-    [user._id]: false, // mark as read when opened
-  };
-});
+    setNotifications((prev: any) =>
+      prev.map((n: any) =>
+        n.from === user._id ? { ...n, read: true } : n
+      )
+    );
   };
 
   const sendMessage = async () => {
@@ -213,8 +211,6 @@ const senderUser = usersRef.current.find((u) => u._id === msg.sender);
 
   return (
     <div className="flex h-screen overflow-hidden">
-
-      {/* IMAGE VIEW */}
       {selectedImage && (
         <div className="fixed inset-0 bg-black flex flex-col z-50">
           <div className="p-4">
@@ -230,7 +226,11 @@ const senderUser = usersRef.current.find((u) => u._id === msg.sender);
       <div className="w-full md:w-1/4 border-r bg-white flex flex-col">
         <div className="p-4 border-b flex justify-between">
           <h2>Users</h2>
-          <Button onClick={() => navigate(`/dashboard?workspaceId=${workspaceId}`)}>
+          <Button
+            onClick={() =>
+              navigate(`/dashboard?workspaceId=${workspaceId}`)
+            }
+          >
             Back
           </Button>
         </div>
@@ -270,44 +270,31 @@ const senderUser = usersRef.current.find((u) => u._id === msg.sender);
 
       {/* CHAT */}
       <div className="flex-1 flex flex-col">
-
         {!activeUser ? (
           <div className="flex items-center justify-center h-full">
             Start a conversation 💬
           </div>
         ) : (
           <>
-            {/* ✅ FIXED HEADER WITH BACK BUTTON */}
             <div className="p-4 border-b flex justify-between items-center bg-white">
               <div className="flex items-center gap-3">
-               <Button
-  size="icon"
-  variant="ghost"
-  onClick={() => setActiveUser(null)}
->
-  <ArrowLeft className="w-5 h-5" />
-</Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setActiveUser(null)}
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
                 <span>{activeUser.name}</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-sm">
-                  {onlineUsers.includes(activeUser._id)
-                    ? "Online"
-                    : "Offline"}
-                </span>
-
-                <div
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    onlineUsers.includes(activeUser._id)
-                      ? "bg-green-500"
-                      : "bg-red-500"
-                  }`}
-                />
-              </div>
+              <span className="text-sm">
+                {onlineUsers.includes(activeUser._id)
+                  ? "Online"
+                  : "Offline"}
+              </span>
             </div>
 
-            {/* MESSAGES */}
             <div className="flex-1 overflow-y-auto p-4">
               {(messages[activeUser._id] || []).map((msg, i) => (
                 <div
@@ -319,60 +306,18 @@ const senderUser = usersRef.current.find((u) => u._id === msg.sender);
                   }`}
                 >
                   <div className="bg-gray-200 px-4 py-2 rounded-2xl max-w-xs">
-
                     {msg.text}
-
-                    {msg.file && (
-                      <div className="mt-2">
-                        {msg.file.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                          <img
-                            src={msg.file}
-                            className="max-w-[200px] rounded-lg cursor-pointer"
-                            onClick={() => setSelectedImage(msg.file!)}
-                          />
-                        ) : (
-                          <div
-                            className="border rounded-lg p-2 flex gap-2 bg-gray-100 cursor-pointer"
-                            onClick={() => window.open(msg.file)}
-                          >
-                            <span>{getFileIcon(msg.file)}</span>
-                            <span className="text-sm truncate">
-                              {getFileName(msg.file)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="text-xs mt-1">
-                      {msg.createdAt &&
-                        new Date(msg.createdAt).toLocaleTimeString()}
-                    </div>
                   </div>
                 </div>
               ))}
               <div ref={bottomRef} />
             </div>
 
-            {/* INPUT */}
-            <div className="p-4 border-t flex gap-2 items-center">
+            <div className="p-4 border-t flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type message..."
               />
-
-              <label className="cursor-pointer w-10 h-10 flex items-center justify-center border rounded">
-                {file ? <Check /> : <Paperclip />}
-                <input
-                  type="file"
-                  hidden
-                  onChange={(e) =>
-                    setFile(e.target.files?.[0] || null)
-                  }
-                />
-              </label>
-
               <Button onClick={sendMessage}>Send</Button>
             </div>
           </>
