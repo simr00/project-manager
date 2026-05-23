@@ -297,70 +297,76 @@ socket.on("receiveMessage", (msg: Message) => {
         ) : (
           <>
             {/* ✅ FIXED HEADER WITH BACK BUTTON */}
-            <div className="p-4 border-b flex justify-between items-center bg-white">
-              <div className="flex items-center gap-3">
-               <Button
-  size="icon"
-  variant="ghost"
-  onClick={() => setActiveUser(null)}
->
-  <ArrowLeft className="w-5 h-5" />
-</Button>
-                <span>{activeUser.name}</span>
-              </div>
-
-              <div className="flex items-center gap-3">
-  {/* STATUS */}
-  <div className="flex items-center gap-2">
-    <span className="text-sm">
-      {onlineUsers.includes(activeUser._id)
-        ? "Online"
-        : "Offline"}
-    </span>
-
-    <div
-      className={`w-2.5 h-2.5 rounded-full ${
-        onlineUsers.includes(activeUser._id)
-          ? "bg-green-500"
-          : "bg-red-500"
-      }`}
-    />
+          <div className="p-4 border-b flex justify-between items-center bg-white">
+  
+  {/* LEFT */}
+  <div className="flex items-center gap-3">
+    <Button
+      size="icon"
+      variant="ghost"
+      onClick={() => setActiveUser(null)}
+    >
+      <ArrowLeft className="w-5 h-5" />
+    </Button>
+    <span>{activeUser.name}</span>
   </div>
 
-  {/* 🗑️ DELETE CHAT MODAL */}
-  <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-    <DialogTrigger asChild>
-      <Button variant="ghost" size="icon">
-        <Trash2 className="w-5 h-5 text-red-500" />
-      </Button>
-    </DialogTrigger>
+  {/* RIGHT */}
+  <div className="flex items-center gap-3">
 
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Delete this chat?</DialogTitle>
-        <DialogDescription>
-          This will permanently delete all messages with{" "}
-          <b>{activeUser.name}</b>.
-        </DialogDescription>
-      </DialogHeader>
+    {/* STATUS */}
+    <div className="flex items-center gap-2">
+      <span className="text-sm">
+        {onlineUsers.includes(activeUser._id)
+          ? "Online"
+          : "Offline"}
+      </span>
 
-      <DialogFooter className="flex justify-end gap-2">
-        <Button
-          variant="outline"
-          onClick={() => setOpenDelete(false)}
-        >
-          Cancel
+      <div
+        className={`w-2.5 h-2.5 rounded-full ${
+          onlineUsers.includes(activeUser._id)
+            ? "bg-green-500"
+            : "bg-red-500"
+        }`}
+      />
+    </div>
+
+    {/* DELETE MODAL */}
+    <Dialog open={openDelete} onOpenChange={setOpenDelete}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Trash2 className="w-5 h-5 text-red-500" />
         </Button>
+      </DialogTrigger>
 
-        <Button
-          className="bg-red-500 hover:bg-red-600"
-          onClick={deleteChat}
-        >
-          Delete
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete this chat?</DialogTitle>
+          <DialogDescription>
+            This will permanently delete all messages with{" "}
+            <b>{activeUser.name}</b>.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setOpenDelete(false)}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            className="bg-red-500 hover:bg-red-600"
+            onClick={deleteChat}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+  </div>
 </div>
 
             {/* MESSAGES */}
