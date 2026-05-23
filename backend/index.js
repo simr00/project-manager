@@ -123,7 +123,7 @@ app.use((err, req, res, next) => {
   console.log(err.stack);
   res.status(500).json({ message: "Internal server error" });
 });
-app.use("/api-v1/messages", messageRoutes);
+
 // NOT FOUND
 app.use((req, res) => {
   res.status(404).json({
