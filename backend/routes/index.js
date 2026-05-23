@@ -21,5 +21,16 @@ router.use("/tasks", taskRoutes);
 router.use("/users", userRoutes);
 router.use("/messages", messageRoutes);
 router.use("/upload", uploadRoutes);
+router.patch("/messages/read/:userId", async (req, res) => {
+  const myId = req.user._id;
+  const { userId } = req.params;
+
+  await Message.updateMany(
+    { sender: userId, receiver: myId, read: false },
+    { $set: { read: true } }
+  );
+
+  res.json({ success: true });
+});
 
 export default router;
