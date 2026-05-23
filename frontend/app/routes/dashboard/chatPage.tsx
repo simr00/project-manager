@@ -335,9 +335,13 @@ socket.on("receiveMessage", (msg: Message) => {
     {/* 🗑️ DELETE ICON */}
     <Dialog open={openDelete} onOpenChange={setOpenDelete}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Trash2 className="w-5 h-5 text-red-500" />
-        </Button>
+       <Button
+  variant="ghost"
+  size="icon"
+  className="hover:bg-red-100"
+>
+  <Trash2 className="w-5 h-5 text-red-600" />
+</Button>
       </DialogTrigger>
 
       {/* MODAL */}
