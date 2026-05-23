@@ -40,16 +40,18 @@ export const getMessages = async (req, res) => {
 };
 export const deleteChat = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { myId } = req.query;
+    const userId = req.params.userId;
+    const myId = req.query.myId;
 
-    console.log("DELETE CHAT:", { userId, myId });
+    console.log("PARAMS:", userId);
+    console.log("QUERY:", myId);
 
-    // ✅ validate
+    // ❌ if missing
     if (!userId || !myId) {
       return res.status(400).json({ message: "Missing IDs" });
     }
 
+    // ❌ if invalid
     if (
       !mongoose.Types.ObjectId.isValid(userId) ||
       !mongoose.Types.ObjectId.isValid(myId)
@@ -57,27 +59,22 @@ export const deleteChat = async (req, res) => {
       return res.status(400).json({ message: "Invalid IDs" });
     }
 
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-    const myObjectId = new mongoose.Types.ObjectId(myId);
-
-    const result = await Message.deleteMany({
+    const deleted = await Message.deleteMany({
       $or: [
-        { sender: myObjectId, receiver: userObjectId },
-        { sender: userObjectId, receiver: myObjectId },
+        { sender: userId, receiver: myId },
+        { sender: myId, receiver: userId },
       ],
     });
 
-    console.log("Deleted:", result.deletedCount);
-
-    res.status(200).json({
-      message: "Chat deleted successfully",
-      deleted: result.deletedCount,
+    return res.status(200).json({
+      message: "Deleted",
+      count: deleted.deletedCount,
     });
-  } catch (error) {
-    console.error("DELETE ERROR:", error);
-    res.status(500).json({
-      message: "Server error",
-      error: error.message,
+
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    return res.status(500).json({
+      message: err.message,
     });
   }
 };
