@@ -72,41 +72,37 @@ useEffect(() => {
     socket.on("onlineUsers", setOnlineUsers);
 
 socket.on("receiveMessage", (msg: Message) => {
+  // ❗ Only handle messages meant for ME
+  if (msg.receiver !== myId) return;
+
   setMessages((prev) => ({
     ...prev,
     [msg.sender]: [...(prev[msg.sender] || []), msg],
   }));
-  
 
-  // 🔵 unread dot
-  if (
-    msg.receiver === myId &&
-    activeUserRef.current?._id !== msg.sender
-  ) {
+  // unread only if not active chat
+  if (activeUserRef.current?._id !== msg.sender) {
     setUnread((prev) => ({
       ...prev,
       [msg.sender]: true,
     }));
 
-    // 🔔 ADD NOTIFICATION
     const senderUser = users.find((u) => u._id === msg.sender);
 
-   setNotifications((prev) => {
-  const updated = [
-    {
-      from: msg.sender,
-      name: senderUser?.name || "User",
-      text: msg.text || "Sent a file",
-      read: false,
-    },
-    ...prev,
-  ];
+    setNotifications((prev) => {
+      const updated = [
+        {
+          from: msg.sender,
+          name: senderUser?.name || "User",
+          text: msg.text || "Sent a file",
+          read: false,
+        },
+        ...prev,
+      ];
 
-  // ✅ SAVE TO LOCALSTORAGE
-  localStorage.setItem("notifications", JSON.stringify(updated));
-
-  return updated;
-});
+      localStorage.setItem("notifications", JSON.stringify(updated));
+      return updated;
+    });
   }
 });
 
@@ -116,12 +112,21 @@ socket.on("receiveMessage", (msg: Message) => {
     });
 
     return () => socket.off();
+    socket.off("typing");
+  socket.off("onlineUsers");
   }, [myId, activeUser]);
 
   // USERS
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await fetch(`${BASE_URL}/api-v1/users`);
+     const res = await fetch(`${BASE_URL}/api-v1/users`, {
+  credentials: "include",
+});
+const data = await res.json();
+
+setUsers(
+  data.filter((u: User) => u._id !== myId && u.isEmailVerified)
+);
       const data = await res.json();
       setUsers(data.filter((u: User) => u._id !== myId));
     };
