@@ -19,7 +19,7 @@ const upload = multer({ storage });
 // POST /api-v1/upload
 router.post("/", upload.single("file"), (req, res) => {
   try {
-    const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+    const fileUrl = `https://project-manager-eeyj.onrender.com/uploads/${req.file.filename}`;
 
     res.json({
       url: fileUrl,
