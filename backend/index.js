@@ -21,11 +21,18 @@ const app = express();
 
 // 🔥 CREATE HTTP SERVER (IMPORTANT)
 const server = http.createServer(app);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://project-manager-38hq.vercel.app",
+  "https://project-manager-38hq-git-main-simranjit-kaur-s-projects.vercel.app",
+];
 
 // 🔥 SOCKET SETUP
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
@@ -73,13 +80,23 @@ io.on("connection", (socket) => {
 });
 
 // MIDDLEWARES
+
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*",
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
   })
 );
+
+app.options("*", cors());
 
 app.use(morgan("dev"));
 app.use(express.json());
