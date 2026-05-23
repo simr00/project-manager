@@ -31,21 +31,16 @@ export default function ChatApp() {
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-  const [typing, setTyping] = useState(false);
 
-  // ✅ unread persistence
   const [unread, setUnread] = useState<Record<string, boolean>>(() => {
     const stored = localStorage.getItem("unread");
     return stored ? JSON.parse(stored) : {};
   });
 
-  // ✅ notifications persistence
-  const [notifications, setNotifications] = useState(() => {
+  const [notifications, setNotifications] = useState<any[]>(() => {
     const stored = localStorage.getItem("notifications");
     return stored ? JSON.parse(stored) : [];
   });
-
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const usersRef = useRef<User[]>([]);
@@ -55,6 +50,7 @@ export default function ChatApp() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const myId = user?._id;
 
+  // sync refs
   useEffect(() => {
     usersRef.current = users;
   }, [users]);
@@ -71,7 +67,7 @@ export default function ChatApp() {
     localStorage.setItem("notifications", JSON.stringify(notifications));
   }, [notifications]);
 
-  // SOCKET
+  // 🔥 SOCKET (REALTIME FIXED)
   useEffect(() => {
     if (myId) socket.emit("join", myId);
 
@@ -80,37 +76,39 @@ export default function ChatApp() {
     socket.on("receiveMessage", (msg: Message) => {
       if (msg.receiver !== myId) return;
 
+      // ✅ instant UI update
       setMessages((prev) => ({
         ...prev,
         [msg.sender]: [...(prev[msg.sender] || []), msg],
       }));
 
-      // ✅ unread logic
-      if (activeUserRef.current?._id !== msg.sender) {
-        setUnread((prev) => ({
-          ...prev,
-          [msg.sender]: true,
-        }));
+      // ✅ auto scroll
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
 
-        const senderUser = usersRef.current.find(
-          (u) => u._id === msg.sender
-        );
+      // if chat already open → no unread
+      if (activeUserRef.current?._id === msg.sender) return;
 
-        setNotifications((prev: any) => [
-          {
-            from: msg.sender,
-            name: senderUser?.name || "User",
-            text: msg.text || "Sent a file",
-            read: false,
-          },
-          ...prev,
-        ]);
-      }
-    });
+      // unread dot
+      setUnread((prev) => ({
+        ...prev,
+        [msg.sender]: true,
+      }));
 
-    socket.on("typing", () => {
-      setTyping(true);
-      setTimeout(() => setTyping(false), 1500);
+      const senderUser = usersRef.current.find(
+        (u) => u._id === msg.sender
+      );
+
+      setNotifications((prev) => [
+        {
+          from: msg.sender,
+          name: senderUser?.name || "User",
+          text: msg.text || "Sent a file",
+          read: false,
+        },
+        ...prev,
+      ]);
     });
 
     return () => {
@@ -143,7 +141,7 @@ export default function ChatApp() {
     }));
   };
 
-  // ✅ FIXED (no msg error + mark read)
+  // ✅ FIXED SELECT USER
   const handleSelectUser = (user: User) => {
     setActiveUser(user);
     fetchMessages(user._id);
@@ -153,8 +151,8 @@ export default function ChatApp() {
       [user._id]: false,
     }));
 
-    setNotifications((prev: any) =>
-      prev.map((n: any) =>
+    setNotifications((prev) =>
+      prev.map((n) =>
         n.from === user._id ? { ...n, read: true } : n
       )
     );
@@ -210,110 +208,55 @@ export default function ChatApp() {
   }, [messages]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black flex flex-col z-50">
-          <div className="p-4">
-            <Button onClick={() => setSelectedImage(null)}>Back</Button>
-          </div>
-          <div className="flex-1 flex items-center justify-center">
-            <img src={selectedImage} className="max-h-[90%]" />
-          </div>
-        </div>
-      )}
-
+    <div className="flex h-screen">
       {/* USERS */}
-      <div className="w-full md:w-1/4 border-r bg-white flex flex-col">
-        <div className="p-4 border-b flex justify-between">
-          <h2>Users</h2>
-          <Button
-            onClick={() =>
-              navigate(`/dashboard?workspaceId=${workspaceId}`)
-            }
+      <div className="w-1/4 border-r">
+        {users.map((u) => (
+          <div
+            key={u._id}
+            onClick={() => handleSelectUser(u)}
+            className="p-4 cursor-pointer flex justify-between"
           >
-            Back
-          </Button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {users.map((u) => {
-            const isOnline = onlineUsers.includes(u._id);
-
-            return (
-              <div
-                key={u._id}
-                onClick={() => handleSelectUser(u)}
-                className={`p-4 cursor-pointer flex justify-between items-center border-b ${
-                  activeUser?._id === u._id
-                    ? "bg-blue-100"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <span>{u.name}</span>
-
-                <div className="flex items-center gap-2">
-                  {unread[u._id] && (
-                    <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
-                  )}
-
-                  <div
-                    className={`w-2.5 h-2.5 rounded-full ${
-                      isOnline ? "bg-green-500" : "bg-red-500"
-                    }`}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+            <span>{u.name}</span>
+            {unread[u._id] && (
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+            )}
+          </div>
+        ))}
       </div>
 
       {/* CHAT */}
       <div className="flex-1 flex flex-col">
         {!activeUser ? (
           <div className="flex items-center justify-center h-full">
-            Start a conversation 💬
+            Start chat 💬
           </div>
         ) : (
           <>
-            <div className="p-4 border-b flex justify-between items-center bg-white">
-              <div className="flex items-center gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setActiveUser(null)}
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <span>{activeUser.name}</span>
-              </div>
-
-              <span className="text-sm">
-                {onlineUsers.includes(activeUser._id)
-                  ? "Online"
-                  : "Offline"}
-              </span>
+            <div className="p-4 border-b flex items-center gap-2">
+              <Button onClick={() => setActiveUser(null)}>
+                <ArrowLeft />
+              </Button>
+              {activeUser.name}
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
               {(messages[activeUser._id] || []).map((msg, i) => (
                 <div
                   key={i}
-                  className={`mb-3 flex ${
+                  className={`mb-2 ${
                     msg.sender === myId
-                      ? "justify-end"
-                      : "justify-start"
+                      ? "text-right"
+                      : "text-left"
                   }`}
                 >
-                  <div className="bg-gray-200 px-4 py-2 rounded-2xl max-w-xs">
-                    {msg.text}
-                  </div>
+                  {msg.text}
                 </div>
               ))}
               <div ref={bottomRef} />
             </div>
 
-            <div className="p-4 border-t flex gap-2">
+            <div className="p-4 flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
