@@ -38,7 +38,6 @@ export const getMessages = async (req, res) => {
     res.status(500).json({ message: "Error fetching messages" });
   }
 };
-import Message from "../models/message.model.js";
 
 export const deleteChat = async (req, res) => {
   try {
