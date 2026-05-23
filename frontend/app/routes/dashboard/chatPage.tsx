@@ -60,6 +60,9 @@ export default function ChatApp() {
 >([]);
 // 🔥 ADD THIS (below your states)
 const activeUserRef = useRef<User | null>(null);
+  useEffect(() => {
+  activeUserRef.current = activeUser;
+}, [activeUser]);
 
 // 🔥 KEEP THIS SYNCED
 useEffect(() => {
@@ -72,11 +75,13 @@ useEffect(() => {
     socket.on("onlineUsers", setOnlineUsers);
 
 socket.on("receiveMessage", (msg: Message) => {
+  const chatUserId =
+    msg.sender === myId ? msg.receiver : msg.sender;
+
   setMessages((prev) => ({
     ...prev,
-    [msg.sender]: [...(prev[msg.sender] || []), msg],
+    [chatUserId]: [...(prev[chatUserId] || []), msg],
   }));
-  
 
   // 🔵 unread dot
   if (
@@ -88,25 +93,22 @@ socket.on("receiveMessage", (msg: Message) => {
       [msg.sender]: true,
     }));
 
-    // 🔔 ADD NOTIFICATION
     const senderUser = users.find((u) => u._id === msg.sender);
 
-   setNotifications((prev) => {
-  const updated = [
-    {
-      from: msg.sender,
-      name: senderUser?.name || "User",
-      text: msg.text || "Sent a file",
-      read: false,
-    },
-    ...prev,
-  ];
+    setNotifications((prev) => {
+      const updated = [
+        {
+          from: msg.sender,
+          name: senderUser?.name || "User",
+          text: msg.text || "Sent a file",
+          read: false,
+        },
+        ...prev,
+      ];
 
-  // ✅ SAVE TO LOCALSTORAGE
-  localStorage.setItem("notifications", JSON.stringify(updated));
-
-  return updated;
-});
+      localStorage.setItem("notifications", JSON.stringify(updated));
+      return updated;
+    });
   }
 });
 
