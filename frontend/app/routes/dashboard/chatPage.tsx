@@ -80,10 +80,14 @@ export default function ChatApp() {
     socket.on("receiveMessage", (msg: Message) => {
       if (msg.receiver !== myId) return;
 
-      setMessages((prev) => ({
-        ...prev,
-        [msg.sender]: [...(prev[msg.sender] || []), msg],
-      }));
+setMessages((prev) => {
+  const updated = {
+    ...prev,
+    [msg.sender]: [...(prev[msg.sender] || []), msg],
+  };
+
+  return { ...updated }; // 🔥 forces React re-render
+});
 
       // ✅ unread logic
       if (activeUserRef.current?._id !== msg.sender) {
@@ -116,7 +120,7 @@ export default function ChatApp() {
     return () => {
       socket.off();
     };
-  }, [myId]);
+  }, [myId, activeUser]);
 
   // USERS
   useEffect(() => {
@@ -128,7 +132,7 @@ export default function ChatApp() {
       setUsers(data.filter((u: User) => u._id !== myId));
     };
     fetchUsers();
-  }, [myId]);
+  }, [myId, activeUser]);
 
   const fetchMessages = async (userId: string) => {
     const res = await fetch(
