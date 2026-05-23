@@ -40,18 +40,23 @@ export const getMessages = async (req, res) => {
 };
 export const deleteChat = async (req, res) => {
   try {
-    const { userId } = req.params; // other user
-    const { myId } = req.query;    // logged in user
+    const { userId } = req.params;
+    const { myId } = req.query;
 
-    if (!userId || !myId) {
-      return res.status(400).json({ message: "Missing IDs" });
+    // ✅ validate ids
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(myId)) {
+      return res.status(400).json({ message: "Invalid IDs" });
     }
 
-    // 🔥 DELETE BOTH SIDES CHAT
+    // 🔥 convert to ObjectId
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const myObjectId = new mongoose.Types.ObjectId(myId);
+
+    // 🔥 delete both sides chat
     await Message.deleteMany({
       $or: [
-        { sender: myId, receiver: userId },
-        { sender: userId, receiver: myId },
+        { sender: myObjectId, receiver: userObjectId },
+        { sender: userObjectId, receiver: myObjectId },
       ],
     });
 
