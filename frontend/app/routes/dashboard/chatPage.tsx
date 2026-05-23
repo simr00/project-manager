@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Paperclip, Check,ArrowLeft } from "lucide-react";
 
-const socket = io("https://project-manager-eeyj.onrender.com/");
+const socket = io("https://project-manager-eeyj.onrender.com");
 
 type User = {
   _id: string;
@@ -41,7 +41,7 @@ export default function ChatApp() {
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const BASE_URL = "https://project-manager-eeyj.onrender.com/";
+  const BASE_URL = "https://project-manager-eeyj.onrender.com";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const myId = user?._id;
 
