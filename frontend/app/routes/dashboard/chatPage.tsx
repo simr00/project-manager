@@ -139,7 +139,7 @@ socket.on("receiveMessage", (msg: Message) => {
       setUsers(data.filter((u: User) => u._id !== myId));
     };
     fetchUsers();
-  }, [myId]);
+  }, [myId, activeUser]);
 
   const fetchMessages = async (userId: string) => {
     const res = await fetch(
