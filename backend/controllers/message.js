@@ -38,37 +38,32 @@ export const getMessages = async (req, res) => {
     res.status(500).json({ message: "Error fetching messages" });
   }
 };
+import Message from "../models/message.model.js";
+
 export const deleteChat = async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const myId = req.query.myId;
+    const { userId } = req.params;
+    const { myId } = req.query;
 
-    console.log("PARAMS:", userId);
-    console.log("QUERY:", myId);
+    console.log("DELETE CHAT:", userId, myId);
 
-    // ❌ if missing
     if (!userId || !myId) {
       return res.status(400).json({ message: "Missing IDs" });
     }
 
-    // ❌ if invalid
-    if (
-      !mongoose.Types.ObjectId.isValid(userId) ||
-      !mongoose.Types.ObjectId.isValid(myId)
-    ) {
-      return res.status(400).json({ message: "Invalid IDs" });
-    }
-
-    const deleted = await Message.deleteMany({
+    // ✅ NO ObjectId conversion needed
+    const result = await Message.deleteMany({
       $or: [
         { sender: userId, receiver: myId },
         { sender: myId, receiver: userId },
       ],
     });
 
+    console.log("Deleted count:", result.deletedCount);
+
     return res.status(200).json({
-      message: "Deleted",
-      count: deleted.deletedCount,
+      message: "Chat deleted",
+      count: result.deletedCount,
     });
 
   } catch (err) {
