@@ -12,6 +12,8 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+import messageRoutes from "./routes/message.routes.js";
+
 
 
 
@@ -121,6 +123,7 @@ app.use((err, req, res, next) => {
   console.log(err.stack);
   res.status(500).json({ message: "Internal server error" });
 });
+app.use("/api-v1", messageRoutes);
 
 // NOT FOUND
 app.use((req, res) => {
