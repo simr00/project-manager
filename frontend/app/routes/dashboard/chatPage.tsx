@@ -40,6 +40,10 @@ export default function ChatApp() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const usersRef = useRef<User[]>([]);
+  useEffect(() => {
+  usersRef.current = users;
+}, [users]);
 
   const BASE_URL = "https://project-manager-eeyj.onrender.com";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -148,12 +152,12 @@ const senderUser = usersRef.current.find((u) => u._id === msg.sender);
     setActiveUser(user);
     fetchMessages(user._id);
 
-    setUnread((prev) => {
-  if (prev[msg.sender]) return prev; // avoid unnecessary overwrite
+   setUnread((prev) => {
+  if (!prev[user._id]) return prev;
 
   return {
     ...prev,
-    [msg.sender]: true,
+    [user._id]: false, // mark as read when opened
   };
 });
   };
