@@ -160,32 +160,63 @@ export const Header = ({
               )}
 
               {notifications.map((n, i) => (
-                <DropdownMenuItem
-                  key={i}
-                  onClick={() => {
-                    // ✅ mark as read
-                    const updated = notifications.map((item, idx) =>
-                      idx === i ? { ...item, read: true } : item
-                    );
+         <DropdownMenuItem
+  key={i}
+  className={`flex justify-between items-start ${
+    !n.read ? "bg-blue-50" : ""
+  }`}
+>
+  {/* LEFT SIDE (click to open chat) */}
+  <div
+    className="flex flex-col flex-1 cursor-pointer"
+    onClick={() => {
+      const updated = notifications.map((item, idx) =>
+        idx === i ? { ...item, read: true } : item
+      );
 
-                    setNotifications(updated);
-                    localStorage.setItem("notifications", JSON.stringify(updated));
+      setNotifications(updated);
+      localStorage.setItem("notifications", JSON.stringify(updated));
 
-                    navigate(`/chat/${n.from}`);
-                  }}
-                  className={`flex flex-col items-start ${
-                    !n.read ? "bg-blue-50" : ""
-                  }`}
-                >
-                 <div className="text-sm">
-  <span className="font-semibold">{n.name}</span>
-  <span className="text-gray-600"> sent: </span>
-</div>
+      navigate(`/chat/${n.from}`);
+    }}
+  >
+    <div className="text-sm">
+      <span className="font-semibold">{n.name}</span>
+      <span className="text-gray-600"> sent: </span>
+    </div>
 
-<div className="text-xs text-gray-500 truncate w-full">
-  {n.text || "📎 Sent a file"}
-</div>
-                </DropdownMenuItem>
+    <div className="text-xs text-gray-500 truncate w-full">
+      {n.text || "📎 Sent a file"}
+    </div>
+  </div>
+
+  {/* RIGHT SIDE (3-dot menu) */}
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <button className="px-2 text-gray-500 hover:text-black">
+        ⋮
+      </button>
+    </DropdownMenuTrigger>
+
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation(); // prevent opening chat
+
+          const updated = notifications.filter((_, idx) => idx !== i);
+
+          setNotifications(updated);
+          localStorage.setItem(
+            "notifications",
+            JSON.stringify(updated)
+          );
+        }}
+      >
+        Remove
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+</DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
