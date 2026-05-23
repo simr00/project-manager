@@ -8,5 +8,5 @@ router.post("/", sendMessage);
 
 // GET → fetch messages
 router.get("/:userId", getMessages);
-router.delete("/:userId", deleteChat);
+router.delete("/messages/:userId", deleteChat);
 export default router;
