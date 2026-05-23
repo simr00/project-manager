@@ -59,7 +59,9 @@ export default function ChatApp() {
   { from: string; name: string; text: string; read: boolean }[]
 >([]);
 // 🔥 ADD THIS (below your states)
-const activeUserRef = useRef<User | null>(null);
+useEffect(() => {
+  activeUserRef.current = activeUser;
+}, [activeUser]);
 
 // 🔥 KEEP THIS SYNCED
 useEffect(() => {
@@ -122,15 +124,7 @@ socket.on("receiveMessage", (msg: Message) => {
      const res = await fetch(`${BASE_URL}/api-v1/users`, {
   credentials: "include",
 });
-const data = await res.json();
 
-const usersArray = Array.isArray(data) ? data : data.users || [];
-
-setUsers(
-  usersArray.filter(
-    (u: any) => u._id !== myId && u.isEmailVerified
-  )
-);
       const data = await res.json();
       setUsers(data.filter((u: User) => u._id !== myId));
     };
@@ -139,7 +133,8 @@ setUsers(
 
   const fetchMessages = async (userId: string) => {
     const res = await fetch(
-      `${BASE_URL}/api-v1/messages/${userId}?myId=${myId}`
+      `${BASE_URL}/api-v1/messages/${userId}?myId=${myId}`, {
+  credentials: "include",}
     );
     const data = await res.json();
 
