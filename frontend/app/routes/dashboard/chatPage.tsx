@@ -152,14 +152,22 @@ socket.on("receiveMessage", (msg: Message) => {
       [userId]: Array.isArray(data) ? data : [],
     }));
   };
-  const deleteChat = async () => {
-  if (!activeUser) return;
+const deleteChat = async () => {
+  if (!activeUser || !myId) {
+    console.error("Missing IDs", { activeUser, myId });
+    return;
+  }
 
   try {
-    await fetch(
+    console.log("DELETE:", activeUser._id, myId); // 👈 DEBUG
+
+    const res = await fetch(
       `${BASE_URL}/api-v1/messages/${activeUser._id}?myId=${myId}`,
       { method: "DELETE" }
     );
+
+    const data = await res.json();
+    console.log("DELETE RESPONSE:", data);
 
     setMessages((prev) => ({
       ...prev,
