@@ -90,8 +90,7 @@ socket.on("receiveMessage", (msg: Message) => {
       [msg.sender]: true,
     }));
 
-    const senderUser = users.find((u) => u._id === msg.sender);
-
+const senderUser = usersRef.current.find((u) => u._id === msg.sender);
     setNotifications((prev) => {
       const updated = [
         {
@@ -114,9 +113,9 @@ socket.on("receiveMessage", (msg: Message) => {
       setTimeout(() => setTyping(false), 1500);
     });
 
-    return () => socket.off();
+    return () => {socket.off();
     socket.off("typing");
-  socket.off("onlineUsers");
+  socket.off("onlineUsers");};
   }, [myId, activeUser]);
 
   // USERS
@@ -149,10 +148,14 @@ socket.on("receiveMessage", (msg: Message) => {
     setActiveUser(user);
     fetchMessages(user._id);
 
-    setUnread((prev) => ({
-      ...prev,
-      [user._id]: false,
-    }));
+    setUnread((prev) => {
+  if (prev[msg.sender]) return prev; // avoid unnecessary overwrite
+
+  return {
+    ...prev,
+    [msg.sender]: true,
+  };
+});
   };
 
   const sendMessage = async () => {
