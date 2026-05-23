@@ -59,6 +59,7 @@ export default function ChatApp() {
   { from: string; name: string; text: string; read: boolean }[]
 >([]);
 // 🔥 ADD THIS (below your states)
+  const activeUserRef = useRef<User | null>(null);
 useEffect(() => {
   activeUserRef.current = activeUser;
 }, [activeUser]);
