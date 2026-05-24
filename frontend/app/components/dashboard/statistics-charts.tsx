@@ -147,8 +147,8 @@ export const StatisticsCharts = ({
                   cy="50%"
                   dataKey="value"
                   nameKey="name"
-                  innerRadius={45}
-                  outerRadius={65}
+                  innerRadius={55}
+                  outerRadius={70}
                   paddingAngle={2}
                 label={({ name, percent }) =>
   `${name} (${(percent * 100).toFixed(0)}%)`
