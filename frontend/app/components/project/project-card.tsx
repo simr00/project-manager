@@ -1,4 +1,5 @@
 import type { Project } from "@/types";
+
 import { Link } from "react-router";
 import {
   Card,
@@ -24,6 +25,7 @@ export const ProjectCard = ({
   progress,
   workspaceId,
 }: ProjectCardProps) => {
+  console.log(project);
   return (
     <Link to={`/workspaces/${workspaceId}/projects/${project._id}`}>
       <Card className="transition-all duration-300 hover:shadow-md hover:translate-y-1">
