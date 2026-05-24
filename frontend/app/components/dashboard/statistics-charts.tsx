@@ -150,8 +150,8 @@ export const StatisticsCharts = ({
                   innerRadius={45}
                   outerRadius={65}
                   paddingAngle={2}
-                 label={({ percent }) =>
-  `${(percent * 100).toFixed(0)}%`
+                label={({ name, percent }) =>
+  `${name} (${(percent * 100).toFixed(0)}%)`
 }
                   labelLine={false}
                 >
