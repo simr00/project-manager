@@ -48,6 +48,7 @@ export const StatisticsCharts = ({
   taskPriorityData,
   workspaceProductivityData,
 }: StatisticsChartsProps) => {
+   console.log("Task Trends Data:", taskTrendsData);
   return (
     <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-8">
       <Card className="lg:col-span-2">
