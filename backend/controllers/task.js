@@ -665,7 +665,38 @@ const getMyTasks = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+const getTaskTrends = async (req, res) => {
+  try {
+    const tasks = await Task.find();
 
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const trends = days.map((day) => ({
+      name: day,
+      completed: 0,
+      inProgress: 0,
+      todo: 0,
+    }));
+
+    tasks.forEach((task) => {
+      const date = new Date(task.createdAt);
+      const dayIndex = date.getDay();
+
+      if (task.status === "completed") {
+        trends[dayIndex].completed += 1;
+      } else if (task.status === "inProgress") {
+        trends[dayIndex].inProgress += 1;
+      } else if (task.status === "todo") {
+        trends[dayIndex].todo += 1;
+      }
+    });
+
+    res.status(200).json(trends);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 export {
   createTask,
   getTaskById,
@@ -683,4 +714,5 @@ export {
   achievedTask,
   getMyTasks,
   getTasks,
+  getTaskTrends,
 };
