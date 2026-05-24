@@ -1,5 +1,5 @@
 import type { Project } from "@/types";
-
+import { getProjectProgress } from "@/lib";
 import { Link } from "react-router";
 import {
   Card,
