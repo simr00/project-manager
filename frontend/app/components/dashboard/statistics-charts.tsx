@@ -178,8 +178,8 @@ export const StatisticsCharts = ({
           </div>
         </CardHeader>
 
-        <CardContent className="w-full overflow-x-auto md:overflow-x-hidden">
-          <div className="min-w-[400px] justify-center">
+       <CardContent className="w-full overflow-visible">
+  <div className="w-full flex justify-center">
             <ChartContainer
               className="h-[300px]"
               config={{
