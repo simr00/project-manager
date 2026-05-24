@@ -130,8 +130,8 @@ export const StatisticsCharts = ({
           <ChartPie className="size-5 text-muted-foreground" />
         </CardHeader>
 
-        <CardContent className="w-full overflow-x-auto md:overflow-x-hidden">
-          <div className="min-w-[350px]">
+       <CardContent className="w-full overflow-visible">
+  <div className="w-full flex justify-center">
             <ChartContainer
               className="h-[300px]"
               config={{
