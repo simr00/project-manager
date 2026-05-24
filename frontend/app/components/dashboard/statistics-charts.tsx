@@ -188,7 +188,7 @@ export const StatisticsCharts = ({
                 Low: { color: "#6b7280" },
               }}
             >
-              <PieChart>
+              <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
                 <Pie
                   data={taskPriorityData}
                   cx="50%"
