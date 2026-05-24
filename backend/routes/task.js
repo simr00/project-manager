@@ -19,6 +19,7 @@ import {
   updateTaskStatus,
   updateTaskTitle,
   watchTask,
+  getTaskTrends,
 } from "../controllers/task.js";
 import authMiddleware from "../middleware/auth-middleware.js";
 
@@ -135,7 +136,7 @@ router.put(
   }),
   updateTaskPriority
 );
-
+router.get("/task-trends", authMiddleware, getTaskTrends);
 router.get(
   "/:taskId",
   authMiddleware,
@@ -164,4 +165,5 @@ router.get(
   }),
   getCommentsByTaskId
 );
+
 export default router;
