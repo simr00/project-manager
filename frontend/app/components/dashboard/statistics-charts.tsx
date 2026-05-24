@@ -147,12 +147,12 @@ export const StatisticsCharts = ({
                   cy="50%"
                   dataKey="value"
                   nameKey="name"
-                  innerRadius={50}
-                  outerRadius={70}
+                  innerRadius={45}
+                  outerRadius={65}
                   paddingAngle={2}
-                  label={({ name, percent }) =>
-                    `${name} (${(percent * 100).toFixed(0)}%)`
-                  }
+                 label={({ percent }) =>
+  `${(percent * 100).toFixed(0)}%`
+}
                   labelLine={false}
                 >
                   {projectStatusData.map((entry, index) => (
