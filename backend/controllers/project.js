@@ -8,7 +8,21 @@ const createProject = async (req, res) => {
     const { title, description, status, startDate, dueDate, tags, members } =
       req.body;
 
-    const workspace = await Workspace.findById(workspaceId);
+    const projects = await Project.find({ workspace: workspaceId });
+
+const updatedProjects = [];
+
+for (let project of projects) {
+  const tasks = await Task.find({
+    project: project._id,
+    isArchived: false,
+  });
+
+  updatedProjects.push({
+    ...project.toObject(),
+    tasks: tasks, // ✅ add tasks here
+  });
+}
 
     if (!workspace) {
       return res.status(404).json({
