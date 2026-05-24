@@ -40,7 +40,7 @@ interface StatisticsChartsProps {
   taskPriorityData: TaskPriorityData[];
   workspaceProductivityData: WorkspaceProductivityData[];
 }
-console.log("Task Trends Data:", taskTrendsData);
+
 export const StatisticsCharts = ({
   stats,
   taskTrendsData,
@@ -275,3 +275,4 @@ export const StatisticsCharts = ({
     </div>
   );
 };
+console.log("Task Trends Data:", taskTrendsData);
