@@ -175,13 +175,13 @@ const getWorkspaceStats = async (req, res) => {
     });
 
     const taskTrendsData = [
-      { name: "Sun", completed: 0, inProgress: 0, toDo: 0 },
-      { name: "Mon", completed: 0, inProgress: 0, toDo: 0 },
-      { name: "Tue", completed: 0, inProgress: 0, toDo: 0 },
-      { name: "Wed", completed: 0, inProgress: 0, toDo: 0 },
-      { name: "Thu", completed: 0, inProgress: 0, toDo: 0 },
-      { name: "Fri", completed: 0, inProgress: 0, toDo: 0 },
-      { name: "Sat", completed: 0, inProgress: 0, toDo: 0 },
+      { name: "Sun", completed: 0, inProgress: 0, todo: 0 },
+      { name: "Mon", completed: 0, inProgress: 0, todo: 0 },
+      { name: "Tue", completed: 0, inProgress: 0, todo: 0 },
+      { name: "Wed", completed: 0, inProgress: 0, todo: 0 },
+      { name: "Thu", completed: 0, inProgress: 0, todo: 0 },
+      { name: "Fri", completed: 0, inProgress: 0, todo: 0 },
+      { name: "Sat", completed: 0, inProgress: 0, todo: 0 },
     ];
 
     // get last 7 days tasks date
@@ -194,7 +194,7 @@ const getWorkspaceStats = async (req, res) => {
     // populate
 
     for (const project of projects) {
-      for (const task in project.tasks) {
+      for (const task of project.tasks) {
         const taskDate = new Date(task.updatedAt);
 
         const dayInDate = last7Days.findIndex(
