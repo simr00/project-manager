@@ -13,7 +13,7 @@ import { getTaskStatusColor } from "@/lib";
 import { Progress } from "../ui/progress";
 import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
-
+const calculatedProgress = getProjectProgress(project.tasks || []);
 interface ProjectCardProps {
   project: Project;
   progress: number;
@@ -50,7 +50,8 @@ export const ProjectCard = ({
            <div className="space-y-2">
   <div className="flex items-center justify-between text-xs">
     <span className="text-muted-foreground">Progress</span>
-    <span className="font-medium">{progress}%</span>
+   <span className="font-medium">{calculatedProgress}%</span>
+<Progress value={calculatedProgress} />
   </div>
 
   <Progress value={progress} className="h-2 rounded-full" />
