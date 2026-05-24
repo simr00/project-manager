@@ -40,6 +40,12 @@ interface StatisticsChartsProps {
   taskPriorityData: TaskPriorityData[];
   workspaceProductivityData: WorkspaceProductivityData[];
 }
+const fixedData = taskTrendsData.map((item) => ({
+  name: item.date, // or item.day
+  completed: item.completedTasks,
+  inProgress: item.in_progress,
+  todo: item.todoTasks,
+}));
 
 export const StatisticsCharts = ({
   stats,
@@ -68,7 +74,7 @@ export const StatisticsCharts = ({
                 todo: { color: "#3b82f6" }, // gray
               }}
             >
-              <LineChart data={taskTrendsData}>
+              <LineChart data={fixedData}>
                 <XAxis
                   dataKey={"name"}
                   stroke="#888888"
@@ -275,4 +281,3 @@ export const StatisticsCharts = ({
     </div>
   );
 };
-console.log("Task Trends Data:", taskTrendsData);
